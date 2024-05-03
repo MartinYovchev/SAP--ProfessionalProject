@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 300px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+        .register-button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            border: none;
+            border-radius: 3px;
+            color: #fff;
+            cursor: pointer;
+        }
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            border: none;
+            border-radius: 3px;
+            color: #fff;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        #error-message{
+            text-align:center;
+            color: red;
+            margin-top:15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Register</h2>
+    <form action="/register" method="POST">
+        <label for="firstName">First Name:</label>
+        <input type="text" id="firstName" name="firstName" required>
+
+        <label for="lastName">Last Name:</label>
+        <input type="text" id="lastName" name="lastName" required>
+
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+
+        <input type="checkbox" id="showPassword" onclick="togglePasswordVisibility()">
+        <label for="showPassword">Show Password</label>
+
+        <p id="error-message"></p>
+        <button type="button" class="register-button" onclick="submitForm()">Register</button>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function submitForm() {
+        var formRegisterData = {
+            firstName: $('#firstName').val(),
+            lastName: $('#lastName').val(),
+            username: $('#username').val(),
+            email: $('#email').val(),
+            password: $('#password').val()
+        };
+        var isValid = true;
+        var errorMessage = "";
+
+        // Name Validation
+        var nameRegex = /^[a-zA-Z\s\-']+$/;
+        if (!nameRegex.test(formRegisterData.firstName) || !nameRegex.test(formRegisterData.lastName)) {
+            isValid = false;
+            errorMessage += "- Invalid name format. Please use letters, spaces, hyphens or apostrophes.\n";
+        }
+
+        // Username Validation
+        var usernameRegex = /^[0-9a-zA-Z_\s\-']+$/;
+        if (!usernameRegex.test(formRegisterData.username)) {
+            isValid = false;
+            errorMessage += "- Invalid username format. Please use letters, numbers, periods, or underscores.\n";
+        }
+
+        // Email Validation
+        var emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+        if (!emailRegex.test(formRegisterData.email)) {
+            isValid = false;
+            errorMessage += "- Invalid email format.\n";
+        }
+
+        // Password Validation (adjust regex as needed)
+        var passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+        if (!passwordRegex.test(formRegisterData.password)) {
+            isValid = false;
+            errorMessage += "- Password must be at least 8 characters and include a lowercase letter, uppercase letter, and number.\n";
+        }
+
+        // If validation fails, display error message and prevent form submission
+        if (!isValid) {
+            document.getElementById('error-message').innerText = errorMessage;
+            return; // Prevent form submission
+        }
+
+        $.ajax({
+            url: '/register',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formRegisterData),
+            success: function(response) {
+                // Registration successful, redirect to login page
+                window.location.href = response && response.redirectUrl ? response.redirectUrl : '/login';
+            },
+            error: function(xhr, textStatus, errorThrown) {
+                // Registration failed, display error message
+                console.error('Register failed:', textStatus, xhr.responseText);
+                $('#error-message').text('Email is taken!');
+            }
+        });
+    }
+
+    function togglePasswordVisibility() {
+        var passwordField = document.getElementById('password');
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+        } else {
+            passwordField.type = 'password';
+        }
+    }
+</script>
+</body>
+</html>
